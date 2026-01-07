@@ -1,0 +1,49 @@
+pipeline {
+    agent any
+
+    environment {
+        AWS_ACCESS_KEY_ID     = credentials('aws-access-key')
+        AWS_SECRET_ACCESS_KEY = credentials('aws-secret-key')
+        AWS_DEFAULT_REGION    = 'us-east-1'
+    }
+
+    stages {
+
+        stage('Pull Code') {
+            steps {
+                git branch: 'devops',
+                    url: 'https://github.com/Sagar-salve-49/jenkins.git'
+            }
+        }
+
+        stage('Terraform Init') {
+            steps {
+                dir('threetier-jenkins') {
+                    sh '''terraform init
+                        terraform plan '''
+                }
+            }
+        }
+
+        
+
+       stage('Terraform apply') {
+           steps {
+               input message: "Do you want to deploy EKS?"
+               dir('threetier-jenkins') {
+                   sh 'terraform apply -auto-approve'
+                }
+            }
+        }
+
+      // stage('Terraform destroy') {
+           // steps {
+            //    input message: "Do you want to destroy EKS?"
+             //   dir('threetier-jenkins') {
+             //       sh 'terraform destroy -auto-approve'
+            //    }
+           // }
+      //  }
+
+    }
+}
